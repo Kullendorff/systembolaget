@@ -361,7 +361,7 @@ SVARA ENDAST MED JSON!`;
 
     if (params.country) {
       results = results.filter(wine => 
-        wine.country.toLowerCase().includes(params.country.toLowerCase())
+        wine.country && wine.country.toLowerCase().includes(params.country.toLowerCase())
       );
     }
 
@@ -420,8 +420,8 @@ SVARA ENDAST MED JSON!`;
     if (params.searchText) {
       const searchLower = params.searchText.toLowerCase();
       results = results.filter(wine => 
-        wine.productNameBold.toLowerCase().includes(searchLower) ||
-        wine.productNameThin.toLowerCase().includes(searchLower) ||
+        (wine.productNameBold && wine.productNameBold.toLowerCase().includes(searchLower)) ||
+        (wine.productNameThin && wine.productNameThin.toLowerCase().includes(searchLower)) ||
         (wine.taste && wine.taste.toLowerCase().includes(searchLower))
       );
     }
@@ -926,7 +926,7 @@ Skriv med personlighet men undvik att kalla dig själv 'expert' eller liknande. 
 
   private isExactMatch(searchTerm: string, wine: WineProduct): boolean {
     const search = searchTerm.toLowerCase();
-    const wineName = `${wine.productNameBold} ${wine.productNameThin}`.toLowerCase();
+    const wineName = `${wine.productNameBold || ''} ${wine.productNameThin || ''}`.toLowerCase();
     
     // Kolla om söktermen innehåller årgång
     const searchVintage = search.match(/\b(19|20)\d{2}\b/);
