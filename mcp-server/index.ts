@@ -28,6 +28,7 @@ interface WineProduct {
   originLevel2?: string;
   grapes?: string[];
   taste?: string;
+  usage?: string;
   tasteClockBody?: number;
   tasteClockRoughness?: number;
   tasteClockSweetness?: number;
@@ -524,11 +525,12 @@ class SystembolagetMCPServer {
     const vintage = wine.vintage ? ` (${wine.vintage})` : '';
     const origin = wine.originLevel2 || wine.originLevel1 || wine.country;
     const taste = wine.taste ? `\nSmak: ${wine.taste}` : '';
+    const usage = wine.usage ? `\n🌡️ ${wine.usage}` : '';
     const tasteClock = this.formatTasteClock(wine);
 
     return `**${wine.productNameBold} ${wine.productNameThin}${vintage}**
 📍 ${origin} | 🍇 ${grapes} | 🍾 ${wine.volumeText} | 💰 ${wine.price} kr | 🥃 ${wine.alcoholPercentage}%
-ID: ${wine.productId}${taste}${tasteClock}`;
+ID: ${wine.productId}${taste}${usage}${tasteClock}`;
   }
 
   private formatDetailedWine(wine: WineProduct): string {
@@ -551,6 +553,9 @@ ID: ${wine.productId}${taste}${tasteClock}`;
 
 **Smakprofil:**
 ${wine.taste || 'Ingen smakbeskrivning tillgänglig'}
+
+**Servering:**
+${wine.usage || 'Ingen serveringsinformation tillgänglig'}
 
 **Smakklocka:**
 ${this.formatTasteClock(wine)}
@@ -655,6 +660,9 @@ ${this.formatTasteClock(wine)}
 
 **Smakprofil:**
 ${taste}
+
+**Servering:**
+${wine.usage || 'Ingen serveringsinformation tillgänglig'}
 
 **Smakklocka:**
 ${tasteClock.join(' | ') || 'Ej angiven'}

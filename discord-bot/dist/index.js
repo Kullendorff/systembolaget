@@ -12,6 +12,8 @@ class WineBot {
     client;
     anthropic;
     wines = [];
+    johanProfile = null;
+    johanWineLog = [];
     constructor(discordToken, anthropicKey) {
         this.client = new Client({
             intents: [
@@ -24,18 +26,130 @@ class WineBot {
             apiKey: anthropicKey,
         });
         this.loadWineData();
+        this.loadJohanProfile();
         this.setupEventHandlers();
     }
-    loadWineData() {
+    async loadWineData() {
         try {
-            const dataPath = join(__dirname, '../../shared/wine_data.json');
-            const rawData = readFileSync(dataPath, 'utf-8');
-            this.wines = JSON.parse(rawData);
-            console.log(`Loaded ${this.wines.length} wine products from shared/wine_data.json`);
+            console.log('Loading wine data from JSON database...');
+            // Läs från JSON-fil istället för API (upp två steg från discord-bot/dist)
+            const dataPath = join(__dirname, '../../shared/wine_database.json');
+            const jsonData = readFileSync(dataPath, 'utf8');
+            const data = JSON.parse(jsonData);
+            this.wines = data.wines || [];
+            console.log(`Loaded ${this.wines.length} wine products from JSON database`);
+            console.log(`Database exported: ${data.metadata?.exportedAt}`);
+            console.log(`Total wines in DB: ${data.metadata?.totalWines || 'unknown'}`);
         }
         catch (error) {
-            console.error('Failed to load wine data:', error);
-            console.error('Make sure wine_data.json exists in shared/ folder');
+            console.error('Failed to load wine data from JSON:', error);
+            console.error('Make sure you have exported the database with: npm run export-wines');
+            console.error('Or run: cd scripts && node export-full-database.js');
+            // Fallback till API om JSON inte fungerar
+            try {
+                console.error('Falling back to API...');
+                const response = await fetch('http://localhost:3000/api/v1/products?limit=50000');
+                if (response.ok) {
+                    const apiData = await response.json();
+                    const wineProducts = (apiData.products || apiData).filter((wine) => {
+                        const category = wine.categoryLevel1 || wine.categoryLevel2 || '';
+                        return category.toLowerCase().includes('vin');
+                    });
+                    this.wines = wineProducts.filter((wine) => !wine.isDiscontinued &&
+                        !wine.isSupplierTemporaryNotAvailable &&
+                        !wine.isCompletelyOutOfStock &&
+                        !wine.isTemporaryOutOfStock &&
+                        this.isStandardBottleSize(wine.volumeText));
+                    console.log(`Fallback: Loaded ${this.wines.length} wines from API`);
+                }
+            }
+            catch (fallbackError) {
+                console.error('API fallback also failed:', fallbackError);
+            }
+        }
+    }
+    loadJohanProfile() {
+        try {
+            console.log('Loading Johan\'s wine profile...');
+            const profilePath = join(__dirname, '../johan_wine_log.json');
+            const profileData = readFileSync(profilePath, 'utf8');
+            const wineLog = JSON.parse(profileData);
+            // Spara hela vinloggen för senare uppslagning
+            this.johanWineLog = wineLog.wines;
+            // Analysera Johans smakprofil baserat på högt rankade viner (90+)
+            const highRatedWines = wineLog.wines.filter((wine) => wine.rating >= 90);
+            // Räkna ut favoritländer
+            const countryCount = {};
+            highRatedWines.forEach((wine) => {
+                countryCount[wine.country] = (countryCount[wine.country] || 0) + 1;
+            });
+            const favoriteCountries = Object.entries(countryCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([country]) => country);
+            // Räkna ut favoritregioner
+            const regionCount = {};
+            highRatedWines.forEach((wine) => {
+                if (wine.region) {
+                    regionCount[wine.region] = (regionCount[wine.region] || 0) + 1;
+                }
+            });
+            const favoriteRegions = Object.entries(regionCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([region]) => region);
+            // Räkna ut prisintervall för högt rankade viner
+            const prices = highRatedWines
+                .map((wine) => {
+                const priceMatch = wine.price?.match(/(\d+)/);
+                return priceMatch ? parseInt(priceMatch[1]) : null;
+            })
+                .filter((price) => price !== null);
+            const avgPrice = prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 300;
+            const minPrice = Math.min(...prices) || 150;
+            const maxPrice = Math.max(...prices) || 800;
+            // Identifiera prefererade vintyper baserat på högt rankade
+            const typeCount = {};
+            highRatedWines.forEach((wine) => {
+                // Gissa vintyp baserat på land/region/namn
+                const name = wine.name.toLowerCase();
+                if (name.includes('pinot noir') || name.includes('nebbiolo') || name.includes('barbaresco') || name.includes('barolo')) {
+                    typeCount['Elegant rött'] = (typeCount['Elegant rött'] || 0) + 1;
+                }
+                else if (name.includes('syrah') || name.includes('cabernet')) {
+                    typeCount['Kraftigt rött'] = (typeCount['Kraftigt rött'] || 0) + 1;
+                }
+                else if (name.includes('riesling') || name.includes('chardonnay')) {
+                    typeCount['Kvalitetsvitt'] = (typeCount['Kvalitetsvitt'] || 0) + 1;
+                }
+                else if (name.includes('champagne') || name.includes('crémant')) {
+                    typeCount['Mousserande'] = (typeCount['Mousserande'] || 0) + 1;
+                }
+            });
+            const preferredTypes = Object.entries(typeCount)
+                .sort((a, b) => b[1] - a[1])
+                .map(([type]) => type);
+            this.johanProfile = {
+                userId: '177927888819978240',
+                preferences: {
+                    favoriteCountries,
+                    favoriteRegions,
+                    preferredPriceRange: { min: minPrice, max: maxPrice },
+                    highRatedWines: highRatedWines.slice(0, 10), // Top 10 för referens
+                    stylePreferences: {
+                        bodyPreference: 8, // Baserat på hans kärlek för Nebbiolo, Syrah etc
+                        preferredTypes
+                    }
+                }
+            };
+            console.log(`Loaded profile for Johan:`);
+            console.log(`- Favorite countries: ${favoriteCountries.join(', ')}`);
+            console.log(`- Favorite regions: ${favoriteRegions.join(', ')}`);
+            console.log(`- Price range: ${minPrice}-${maxPrice} kr (avg: ${avgPrice})`);
+            console.log(`- Preferred styles: ${preferredTypes.join(', ')}`);
+        }
+        catch (error) {
+            console.error('Failed to load Johan\'s profile:', error);
         }
     }
     setupEventHandlers() {
@@ -58,6 +172,7 @@ class WineBot {
     }
     async handleWineQuery(message) {
         try {
+            console.log(`[DEBUG] Wine query from ${message.author.username} (${message.author.id}): "${message.content}"`);
             if (message.channel && 'sendTyping' in message.channel) {
                 await message.channel.sendTyping();
             }
@@ -66,30 +181,65 @@ class WineBot {
                 .replace('!vin ', '')
                 .replace(`<@${this.client.user?.id}>`, '')
                 .trim();
+            console.log(`[DEBUG] Cleaned query: "${query}"`);
             if (!query) {
                 await message.reply('Vad vill du veta om vin? Fråga mig om rekommendationer, sök efter specifika viner eller be om matmatchningar! 🍷');
                 return;
             }
+            // Kolla om det är en artikel-ID sökning (bara siffror)
+            if (this.isProductIdLookup(query)) {
+                console.log(`[DEBUG] Detected product ID lookup: ${query}`);
+                await this.handleProductIdLookup(message, query);
+                return;
+            }
             // Kolla om det är en specifik vinnamnsökning (börjar med stort namn utan filtrerande ord)
             if (this.isSpecificWineLookup(query)) {
+                console.log(`[DEBUG] Detected specific wine lookup: ${query}`);
                 await this.handleSpecificWineLookup(message, query);
                 return;
             }
+            console.log(`[DEBUG] Using general search with Claude analysis`);
             // Analysera frågan med Claude och få sökparametrar
             const searchParams = await this.analyzeQuery(query);
+            console.log(`[DEBUG] Claude analysis result:`, JSON.stringify(searchParams, null, 2));
+            // Integrera Johans smakprofil om det är han som frågar
+            const isJohan = message.author.id === '177927888819978240';
+            console.log(`[DEBUG] Is Johan: ${isJohan}`);
+            if (isJohan && this.johanProfile) {
+                console.log(`[DEBUG] Enhancing search with Johan's profile`);
+                this.enhanceSearchWithProfile(searchParams, this.johanProfile);
+                console.log(`[DEBUG] Enhanced search params:`, JSON.stringify(searchParams, null, 2));
+            }
+            // Kolla om användaren vill ha dyrare viner (har satt max-pris)
+            const maxPriceMatch = query.match(/max (\d+)|under (\d+)|högst (\d+)/i);
+            const preferHigherPrices = !!maxPriceMatch;
             // Sök i vindatabasen
-            const results = this.searchWines(searchParams);
+            let results = this.searchWines(searchParams, preferHigherPrices);
+            console.log(`[DEBUG] Search found ${results.length} wines before personal preferences`);
+            // Boosta resultat baserat på Johans profil om det är han
+            if (isJohan && this.johanProfile) {
+                console.log(`[DEBUG] Applying Johan's personal preferences`);
+                results = this.applyPersonalPreferences(results, this.johanProfile);
+                console.log(`[DEBUG] After personal preferences: ${results.length} wines`);
+            }
             if (results.length === 0) {
+                console.log(`[DEBUG] No wines found for query: "${query}"`);
                 await message.reply('Hittade inga viner som matchar din sökning. Prova att ändra kriterierna! 🤷‍♂️');
                 return;
             }
             // Skapa svar med Claude
-            const response = await this.generateResponse(query, results);
+            const response = await this.generateResponse(query, results, isJohan ? this.johanProfile : null);
+            console.log(`[DEBUG] Generated response (${response.length} chars)`);
             // Skicka svar som embed
-            await this.sendWineRecommendations(message, response, results.slice(0, 3));
+            const topResults = results.slice(0, 3);
+            console.log(`[DEBUG] Sending ${topResults.length} wines:`, topResults.map(w => `${w.productNameBold} ${w.productNameThin || ''} (${w.productId})`));
+            await this.sendWineRecommendations(message, response, topResults);
         }
         catch (error) {
-            console.error('Error handling wine query:', error);
+            console.error('[ERROR] Error handling wine query:', error);
+            if (error instanceof Error) {
+                console.error('[ERROR] Stack trace:', error.stack);
+            }
             await message.reply('Något gick fel när jag letade efter viner. Försök igen! 😅');
         }
     }
@@ -116,8 +266,12 @@ Exempel:
 "Fylliga Barolo" → {"searchText": "Barolo", "categoryLevel1": "Rött vin", "tasteClockBodyMin": 8}
 "runt 200 kr" → {"minPrice": 150, "maxPrice": 250}
 "omkring 300 kr" → {"minPrice": 250, "maxPrice": 350}
+"max 300 kr" → {"maxPrice": 300}
+"till älg - max 300" → {"dish": "älg", "categoryLevel1": "Rött vin", "tasteClockBodyMin": 7, "maxPrice": 300}
 
-VIKTIGT: När någon säger "runt X kr" eller "omkring X kr", sätt minPrice till X-50 och maxPrice till X+50.
+VIKTIGT: 
+- När någon säger "runt X kr" eller "omkring X kr", sätt minPrice till X-50 och maxPrice till X+50.
+- När någon säger "max X kr" eller "under X kr", sätt bara maxPrice till X (ingen minPrice).
 
 SVARA ENDAST MED JSON!`;
         const response = await this.anthropic.messages.create({
@@ -136,14 +290,15 @@ SVARA ENDAST MED JSON!`;
         }
         return {}; // Fallback till tom sökning
     }
-    searchWines(params) {
+    searchWines(params, preferHigherPrices = false) {
         let results = this.wines.filter(wine => !wine.isDiscontinued &&
             !wine.isSupplierTemporaryNotAvailable &&
             !wine.isCompletelyOutOfStock &&
             !wine.isTemporaryOutOfStock &&
-            this.isStandardBottleSize(wine.volumeText));
+            this.isStandardBottleSize(wine.volumeText) &&
+            !this.isBagInBox(wine));
         if (params.country) {
-            results = results.filter(wine => wine.country.toLowerCase().includes(params.country.toLowerCase()));
+            results = results.filter(wine => wine.country && wine.country.toLowerCase().includes(params.country.toLowerCase()));
         }
         if (params.grapes && params.grapes.length > 0) {
             results = results.filter(wine => wine.grapes && params.grapes.some((grape) => wine.grapes.some(wineGrape => wineGrape.toLowerCase().includes(grape.toLowerCase()))));
@@ -183,8 +338,8 @@ SVARA ENDAST MED JSON!`;
         }
         if (params.searchText) {
             const searchLower = params.searchText.toLowerCase();
-            results = results.filter(wine => wine.productNameBold.toLowerCase().includes(searchLower) ||
-                wine.productNameThin.toLowerCase().includes(searchLower) ||
+            results = results.filter(wine => (wine.productNameBold && wine.productNameBold.toLowerCase().includes(searchLower)) ||
+                (wine.productNameThin && wine.productNameThin.toLowerCase().includes(searchLower)) ||
                 (wine.taste && wine.taste.toLowerCase().includes(searchLower)));
         }
         // Matmatchning
@@ -194,9 +349,10 @@ SVARA ENDAST MED JSON!`;
                 results = results.filter(wine => wine.categoryLevel2?.includes('Vitt vin') &&
                     wine.tasteClockBody && wine.tasteClockBody >= 3 && wine.tasteClockBody <= 8);
             }
-            else if (dishLower.includes('kött') || dishLower.includes('lamm')) {
+            else if (dishLower.includes('kött') || dishLower.includes('lamm') || dishLower.includes('älg') || dishLower.includes('vilt')) {
                 results = results.filter(wine => wine.categoryLevel2?.includes('Rött vin') &&
-                    wine.tasteClockBody && wine.tasteClockBody >= 6);
+                    wine.tasteClockBody && wine.tasteClockBody >= 7 // Högre krav för vilt
+                );
             }
         }
         // Sortera efter relevans - prioritera tillgänglighet
@@ -230,30 +386,69 @@ SVARA ENDAST MED JSON!`;
             if (!aOrder && bOrder)
                 return -1;
             // 5. Inom samma sortiment, sortera efter pris
-            return a.price - b.price;
+            return preferHigherPrices ? b.price - a.price : a.price - b.price;
         });
-        return results.slice(0, 10);
+        // Ta bort eventuella dubletter baserat på productId innan vi returnerar
+        const uniqueResults = results.filter((wine, index, arr) => arr.findIndex(w => w.productId === wine.productId) === index);
+        return uniqueResults.slice(0, 10);
     }
-    async generateResponse(query, wines) {
-        const wineList = wines.slice(0, 3).map(wine => `${wine.productNameBold} ${wine.productNameThin} (${wine.price} kr, ${wine.country}, ${wine.grapes?.join(', ') || 'okänd druva'})`).join('\n');
+    async generateResponse(query, wines, userProfile) {
+        const wineList = wines.slice(0, 3).map((wine, index) => {
+            const wineName = wine.productNameThin ?
+                `${wine.productNameBold} ${wine.productNameThin}` :
+                wine.productNameBold || 'Okänt vin';
+            // Kolla om användaren har prövat detta vin tidigare (endast för Johan)
+            const userTasting = this.johanWineLog.find(logWine => logWine.article_number === wine.productId ||
+                this.isWineNameMatch(logWine.name, wineName));
+            let wineDescription = `${index + 1}. ${wineName} (${wine.price} kr, ${wine.country}, ${wine.grapes?.join(', ') || 'okänd druva'})`;
+            if (userTasting) {
+                wineDescription += `\n   DITT TIDIGARE BETYG: ${userTasting.rating}/100`;
+                if (userTasting.tasting_notes) {
+                    wineDescription += ` - "${userTasting.tasting_notes}"`;
+                }
+                if (userTasting.comments) {
+                    wineDescription += ` | ${userTasting.comments}`;
+                }
+            }
+            return wineDescription;
+        }).join('\n');
         // Analysera om användaren anger ett specifikt prisintervall
         const priceMatch = query.match(/runt (\d+)|omkring (\d+)|ca (\d+)/i);
         const targetPrice = priceMatch ? parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3]) : null;
+        // Analysera prisintention från frågan
+        const maxPriceMatch = query.match(/max (\d+)|under (\d+)|högst (\d+)/i);
+        const maxPriceRequested = maxPriceMatch ? parseInt(maxPriceMatch[1] || maxPriceMatch[2] || maxPriceMatch[3]) : null;
+        // Bygg personaliserad kontext om det är Johan
+        const personalContext = userProfile ? `
+PERSONLIG SMAKPROFIL (Johan):
+- Favoritländer: ${userProfile.preferences.favoriteCountries.join(', ')}
+- Favoritregioner: ${userProfile.preferences.favoriteRegions.join(', ')}
+- Högt rankade viner inkluderar: Nebbiolo (Barolo/Barbaresco), Pinot Noir, Syrah, kvalitetschardonnay och Riesling
+- Uppskattar fyllighet 7-12, elegant struktur och kvalitet över lågt pris
+- Gillar både klassiska och moderna uttryck från respekterade producenter
+` : '';
         const prompt = `
 Användaren frågade: "${query}"
+
+${personalContext}
 
 Jag hittade dessa viner i Systembolagets sortiment:
 ${wineList}
 
 ${targetPrice ? `VIKTIGT: Användaren bad om viner runt ${targetPrice} kr. Kommentera att vinerna ligger i rätt prisklass och fokusera på kvalitet/värde i den prisklassen.` : ''}
+${maxPriceRequested ? `KRITISKT: Användaren specificerade MAX ${maxPriceRequested} kr. Rekommendera viner i övre delen av denna prisklass (${Math.round(maxPriceRequested * 0.7)}-${maxPriceRequested} kr) för bästa kvalitet. Undvik att föreslå billigaste alternativen utan anledning.` : ''}
+${userProfile ? `PERSONLIGT: Baserat på smakprofilen, prioritera viner från favoritländer/regioner och med hans prefererade stilar.` : ''}
 
 Skriv ett naturligt, entusiastiskt svar på svenska som:
-1. Bekräftar vad användaren letade efter
+1. Bekräftar vad användaren letade efter (inklusive prisbudget om specificerat)
 2. Presenterar de bästa alternativen med personlighet
 3. Ger korta, känslovärda beskrivningar
-4. Avslutar med en uppmuntrande kommentar
+4. Förklarar kort varför just dessa viner valts
+5. Avslutar med en uppmuntrande kommentar
 
-VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt språk, som en kunnig vän.`;
+KRITISKT: Prata ENDAST om de viner som finns i listan ovan. Hitta INTE på andra viner. Om det bara finns ett vin i listan, skriv bara om det vinet.
+VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt språk, som en kunnig vän.
+ABSOLUT VIKTIGT: Om det finns "DITT TIDIGARE BETYG" för ett vin, referera till det som "Du har tidigare prövat detta och gav det X/100" eftersom det är användarens egen vinlogg. ALDRIG påstå att du som AI har testat vinet.`;
         const response = await this.anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
             max_tokens: 500,
@@ -272,13 +467,17 @@ VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt spr�
             .setThumbnail('https://emoji.gg/assets/emoji/4698-wine.png');
         // Lägg till viner som fält
         wines.forEach((wine, index) => {
-            const grapes = wine.grapes ? wine.grapes.join(', ') : 'Okänd druva';
+            const grapes = wine.grapes && wine.grapes.length > 0 ? wine.grapes.join(', ') : 'Okänd druva';
             const vintage = wine.vintage ? ` (${wine.vintage})` : '';
             const origin = wine.originLevel2 || wine.originLevel1 || wine.country;
             const tasteClock = this.formatTasteClock(wine);
+            const wineName = wine.productNameThin ?
+                `${wine.productNameBold} ${wine.productNameThin}` :
+                wine.productNameBold || 'Okänt vin';
+            const usage = wine.usage ? `\n🌡️ ${wine.usage}` : '';
             embed.addFields({
-                name: `${index + 1}. ${wine.productNameBold} ${wine.productNameThin}${vintage}`,
-                value: `📍 ${origin}\n🍇 ${grapes}\n💰 ${wine.price} kr | 🥃 ${wine.alcoholPercentage}%\n🆔 ${wine.productId}${tasteClock}`,
+                name: `${index + 1}. ${wineName}${vintage}`,
+                value: `📍 ${origin}\n🍇 ${grapes}\n💰 ${wine.price} kr | 🥃 ${wine.alcoholPercentage}%\n🆔 ${wine.productId}${usage}${tasteClock}`,
                 inline: false,
             });
         });
@@ -295,6 +494,36 @@ VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt spr�
             parts.push(`Sötma: ${wine.tasteClockSweetness}/12`);
         return parts.length > 0 ? `\n🕐 ${parts.join(' | ')}` : '';
     }
+    isProductIdLookup(query) {
+        // Känner igen artikel-ID (bara siffror, 4-6 tecken)
+        const trimmed = query.trim();
+        return /^\d{4,6}$/.test(trimmed);
+    }
+    async handleProductIdLookup(message, productId) {
+        try {
+            if (message.channel && 'sendTyping' in message.channel) {
+                await message.channel.sendTyping();
+            }
+            // Sök efter vinet med artikel-ID
+            const wine = this.wines.find(w => w.productId === productId);
+            if (!wine) {
+                await message.reply(`Hittade inget vin med artikel-ID ${productId}. Kolla att numret är rätt! 🤔`);
+                return;
+            }
+            if (wine.isDiscontinued || wine.isSupplierTemporaryNotAvailable ||
+                wine.isCompletelyOutOfStock || wine.isTemporaryOutOfStock) {
+                await message.reply(`Vinet med artikel-ID ${productId} är tyvärr inte tillgängligt just nu. Det kan vara utgånget eller tillfälligt slut i lager. 😞`);
+                return;
+            }
+            // Analysera vinet och visa detaljer
+            const analysis = await this.analyzeSpecificWine(wine);
+            await this.sendWineAnalysis(message, wine, analysis);
+        }
+        catch (error) {
+            console.error('Error in product ID lookup:', error);
+            await message.reply('Något gick fel när jag letade efter artikel-ID:t. Försök igen! 😅');
+        }
+    }
     isSpecificWineLookup(query) {
         // Känner igen specifika vinnamn som inte innehåller filtrerande ord
         const filterWords = ['till', 'för', 'under', 'över', 'runt', 'billig', 'dyr', 'från', 'land', 'region', 'druv'];
@@ -308,34 +537,55 @@ VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt spr�
             if (message.channel && 'sendTyping' in message.channel) {
                 await message.channel.sendTyping();
             }
-            // Sök efter vinet i databasen - hantera null värden
-            const matchingWines = this.wines.filter(wine => !wine.isDiscontinued &&
-                !wine.isSupplierTemporaryNotAvailable &&
-                !wine.isCompletelyOutOfStock &&
-                !wine.isTemporaryOutOfStock &&
-                this.isStandardBottleSize(wine.volumeText) &&
-                wine.productNameBold && wine.productNameThin && // Säkerställ att namnen existerar
-                (wine.productNameBold.toLowerCase().includes(vineName.toLowerCase()) ||
-                    wine.productNameThin.toLowerCase().includes(vineName.toLowerCase())));
+            // Sök direkt i den laddade vindatabasen
+            const searchTerms = this.generateSearchVariants(vineName);
+            let allMatchingWines = [];
+            // Sök med alla varianter tills vi hittar resultat
+            for (const searchTerm of searchTerms) {
+                const searchLower = searchTerm.toLowerCase();
+                const matches = this.wines.filter(wine => wine.productNameBold?.toLowerCase().includes(searchLower) ||
+                    wine.productNameThin?.toLowerCase().includes(searchLower));
+                if (matches.length > 0) {
+                    allMatchingWines = matches;
+                    break; // Sluta söka när vi hittar träffar
+                }
+            }
+            // JSON-databasen innehåller redan bara tillgängliga viner
+            let matchingWines = allMatchingWines;
             if (matchingWines.length === 0) {
                 await message.reply(`Hittade inget vin som heter "${vineName}" i Systembolagets sortiment. Kanske är det utgånget eller stavat annorlunda? 🤔`);
                 return;
             }
-            // Ta det bästa matchandet (prioritera Fast sortiment)
-            matchingWines.sort((a, b) => {
-                const aFast = a.assortmentText === 'Fast sortiment';
-                const bFast = b.assortmentText === 'Fast sortiment';
-                if (aFast && !bFast)
-                    return -1;
-                if (!aFast && bFast)
-                    return 1;
-                return a.price - b.price;
-            });
-            const wine = matchingWines[0];
-            // Få Claudes analys av vinet
-            const analysis = await this.analyzeSpecificWine(wine);
-            // Skicka detaljerat svar
-            await this.sendWineAnalysis(message, wine, analysis);
+            // Tillämpa personliga preferenser om det är Johan
+            const isJohan = message.author.id === '177927888819978240';
+            if (isJohan && this.johanProfile) {
+                console.log(`[DEBUG] Applying Johan's preferences to specific wine search`);
+                matchingWines = this.applyPersonalPreferences(matchingWines, this.johanProfile);
+            }
+            // Sortera för att hitta bästa träffar (behåll personlig sortering om den är tillämpad)
+            if (!isJohan || !this.johanProfile) {
+                matchingWines.sort((a, b) => {
+                    const aFast = a.assortmentText === 'Fast sortiment';
+                    const bFast = b.assortmentText === 'Fast sortiment';
+                    if (aFast && !bFast)
+                        return -1;
+                    if (!aFast && bFast)
+                        return 1;
+                    return a.price - b.price;
+                });
+            }
+            // Om vi bara har en träff eller första träffen är en perfekt match
+            if (matchingWines.length === 1 || this.isExactMatch(vineName, matchingWines[0])) {
+                const wine = matchingWines[0];
+                const analysis = await this.analyzeSpecificWine(wine);
+                await this.sendWineAnalysis(message, wine, analysis);
+            }
+            else {
+                // Visa flera alternativ om vi inte har exakt träff - med Claude's beskrivningar
+                const topWines = matchingWines.slice(0, 3);
+                const response = await this.generateResponse(vineName, topWines, isJohan ? this.johanProfile : null);
+                await this.sendWineRecommendations(message, response, topWines);
+            }
         }
         catch (error) {
             console.error('Error in specific wine lookup:', error);
@@ -368,13 +618,13 @@ Analysera detta vin från Systembolaget:
 - Smakbeskrivning: ${taste}
 - Smakklocka: ${tasteClock.join(', ') || 'Ej angiven'}
 
-Ge en kort (max 100 ord) expertanalys på svenska som täcker:
+Ge en kort (max 100 ord) analys på svenska som täcker:
 1. Vad du tycker om vinet baserat på dess profil
 2. Värde för pengarna
 3. Vad det passar till
 4. Några intressanta detaljer om druvor/region
 
-Skriv som en kunnig vinexpert med personlighet.`;
+Skriv med personlighet men undvik att kalla dig själv 'expert' eller liknande. Skriv som en kunnig vän som gillar vin.`;
         const response = await this.anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
             max_tokens: 400,
@@ -384,7 +634,7 @@ Skriv som en kunnig vinexpert med personlighet.`;
         return content.type === 'text' ? content.text : 'Intressant vin! 🍷';
     }
     async sendWineAnalysis(message, wine, analysis) {
-        const grapes = wine.grapes ? wine.grapes.join(', ') : 'Okänd druva';
+        const grapes = wine.grapes && wine.grapes.length > 0 ? wine.grapes.join(', ') : 'Okänd druva';
         const vintage = wine.vintage ? ` (${wine.vintage})` : '';
         const origin = wine.originLevel2 || wine.originLevel1 || wine.country || 'Okänt ursprung';
         const tasteClock = this.formatTasteClock(wine);
@@ -412,6 +662,14 @@ Skriv som en kunnig vinexpert med personlighet.`;
                 inline: false
             });
         }
+        // Serveringsinformation om den finns
+        if (wine.usage) {
+            embed.addFields({
+                name: '🌡️ Servering',
+                value: wine.usage,
+                inline: false
+            });
+        }
         // Claudes analys
         const truncatedAnalysis = analysis.length > 1000 ? analysis.substring(0, 1000) + '...' : analysis;
         embed.addFields({
@@ -422,11 +680,56 @@ Skriv som en kunnig vinexpert med personlighet.`;
         embed.setFooter({ text: 'Sök fler viner med !vin [vinnamn] eller !vin [beskrivning]' });
         await message.reply({ embeds: [embed] });
     }
+    generateSearchVariants(vineName) {
+        const variants = [];
+        // Original sökning
+        variants.push(vineName);
+        // Ta bort accenter och specialtecken för fuzzy search
+        const normalized = vineName
+            .toLowerCase()
+            .replace(/[àáâãäå]/g, 'a')
+            .replace(/[èéêë]/g, 'e')
+            .replace(/[ìíîï]/g, 'i')
+            .replace(/[òóôõö]/g, 'o')
+            .replace(/[ùúûü]/g, 'u')
+            .replace(/[ñ]/g, 'n')
+            .replace(/[ç]/g, 'c');
+        if (normalized !== vineName.toLowerCase()) {
+            variants.push(normalized);
+        }
+        // Extrahera bara producentnamnet (första 1-2 orden)
+        const words = vineName.split(' ').filter(w => w.length > 2);
+        if (words.length >= 2) {
+            variants.push(words.slice(0, 2).join(' '));
+        }
+        if (words.length >= 1) {
+            variants.push(words[0]);
+        }
+        // Ta bort årgång och sök utan den
+        const withoutVintage = vineName.replace(/\b(19|20)\d{2}\b/g, '').trim();
+        if (withoutVintage !== vineName && withoutVintage.length > 3) {
+            variants.push(withoutVintage);
+        }
+        // Lägg till normalised version av producent
+        if (words.length >= 1) {
+            const normalizedProducer = words[0]
+                .toLowerCase()
+                .replace(/[àáâãäå]/g, 'a')
+                .replace(/[èéêë]/g, 'e')
+                .replace(/[ìíîï]/g, 'i')
+                .replace(/[òóôõö]/g, 'o')
+                .replace(/[ùúûü]/g, 'u')
+                .replace(/[ñ]/g, 'n')
+                .replace(/[ç]/g, 'c');
+            variants.push(normalizedProducer);
+        }
+        return [...new Set(variants)]; // Ta bort dubletter
+    }
     isStandardBottleSize(volumeText) {
         // Extrahera numeriskt värde från volumeText (t.ex. "750 ml", "375ml", "1.5 l")
         const volume = this.parseVolume(volumeText);
-        // Acceptera endast flaskor på 750ml eller större
-        return volume >= 750;
+        // Acceptera endast standard flaskor mellan 750ml och 1000ml
+        return volume >= 750 && volume <= 1000;
     }
     parseVolume(volumeText) {
         // Hantera olika format: "750 ml", "375ml", "1.5 l", "0.75l"
@@ -442,6 +745,149 @@ Skriv som en kunnig vinexpert med personlighet.`;
             return value * 1000;
         }
         return value;
+    }
+    isBagInBox(wine) {
+        // Kolla olika sätt att identifiera bag-in-box
+        if (wine.bottleText?.toLowerCase().includes('box'))
+            return true;
+        if (wine.packagingLevel1?.toLowerCase().includes('box'))
+            return true;
+        if (wine.productNameBold?.toLowerCase().includes('bag in box'))
+            return true;
+        if (wine.productNameThin?.toLowerCase().includes('bag in box'))
+            return true;
+        // Volym över 1.5L är ofta bag-in-box
+        const volume = this.parseVolume(wine.volumeText || '');
+        if (volume > 1500)
+            return true;
+        return false;
+    }
+    enhanceSearchWithProfile(searchParams, profile) {
+        // Om inget specifikt land/region är satt, förbättra med Johans favoriter
+        if (!searchParams.country && profile.preferences.favoriteCountries.length > 0) {
+            // Lägg inte till automatiskt, men använd för prioritering senare
+        }
+        // Om inget prisintervall är satt, använd Johans kvalitetspreferenser
+        if (!searchParams.minPrice && !searchParams.maxPrice) {
+            // Föreslå viner i hans vanliga prisintervall för kvalitet
+            if (searchParams.dish || searchParams.categoryLevel1) {
+                searchParams.minPrice = Math.max(200, profile.preferences.preferredPriceRange.min);
+            }
+        }
+        // Förstärk fyllighetsparametrar baserat på hans smak
+        if (!searchParams.tasteClockBodyMin && searchParams.categoryLevel1?.toLowerCase().includes('rött')) {
+            searchParams.tasteClockBodyMin = Math.max(6, profile.preferences.stylePreferences.bodyPreference - 2);
+        }
+    }
+    applyPersonalPreferences(wines, profile) {
+        // Poängsystem för att prioritera viner som matchar Johans smak
+        const scoredWines = wines.map(wine => {
+            let score = 0;
+            // +10 poäng för favoritländer
+            if (profile.preferences.favoriteCountries.includes(wine.country)) {
+                score += 10;
+            }
+            // +15 poäng för favoritregioner
+            if (wine.originLevel1 && profile.preferences.favoriteRegions.some(region => wine.originLevel1?.includes(region) || region.includes(wine.originLevel1 || ''))) {
+                score += 15;
+            }
+            if (wine.originLevel2 && profile.preferences.favoriteRegions.some(region => wine.originLevel2?.includes(region) || region.includes(wine.originLevel2 || ''))) {
+                score += 15;
+            }
+            // +5 poäng för viner i hans kvalitetsprisintervall
+            if (wine.price >= profile.preferences.preferredPriceRange.min * 0.8 &&
+                wine.price <= profile.preferences.preferredPriceRange.max * 1.2) {
+                score += 5;
+            }
+            // +8 poäng för rätt fyllighet (han gillar fylligare viner)
+            if (wine.tasteClockBody && wine.tasteClockBody >= profile.preferences.stylePreferences.bodyPreference - 2) {
+                score += 8;
+            }
+            // +20 poäng för druvor han historiskt uppskattat
+            const favoriteGrapes = ['nebbiolo', 'pinot noir', 'syrah', 'riesling', 'chardonnay', 'sangiovese'];
+            if (wine.grapes) {
+                wine.grapes.forEach(grape => {
+                    if (favoriteGrapes.some(fav => grape.toLowerCase().includes(fav))) {
+                        score += 20;
+                    }
+                });
+            }
+            return { wine, score };
+        });
+        // Sortera efter poäng (behåll ursprunglig sortering för lika poäng)
+        scoredWines.sort((a, b) => {
+            if (b.score === a.score)
+                return 0;
+            return b.score - a.score;
+        });
+        // Ta bort dubletter även efter personlig prioritering
+        const uniqueWines = scoredWines
+            .map(item => item.wine)
+            .filter((wine, index, arr) => arr.findIndex(w => w.productId === wine.productId) === index);
+        return uniqueWines;
+    }
+    isExactMatch(searchTerm, wine) {
+        const search = searchTerm.toLowerCase();
+        const wineName = `${wine.productNameBold || ''} ${wine.productNameThin || ''}`.toLowerCase();
+        // Kolla om söktermen innehåller årgång
+        const searchVintage = search.match(/\b(19|20)\d{2}\b/);
+        // Om användaren specificerade årgång, kräv exakt årgångsträff
+        if (searchVintage && wine.vintage) {
+            return search.includes(wine.vintage);
+        }
+        // Annars är det en exakt träff om vinnamnet täcker större delen av söktermen
+        return wineName.includes(search) || search.includes(wineName.substring(0, wineName.length / 2));
+    }
+    isWineNameMatch(logWineName, systemWineName) {
+        // Normalisera båda namnen för jämförelse
+        const normalize = (name) => name
+            .toLowerCase()
+            .replace(/[àáâãäå]/g, 'a')
+            .replace(/[èéêë]/g, 'e')
+            .replace(/[ìíîï]/g, 'i')
+            .replace(/[òóôõö]/g, 'o')
+            .replace(/[ùúûü]/g, 'u')
+            .replace(/[ñ]/g, 'n')
+            .replace(/[ç]/g, 'c')
+            .replace(/\b(19|20)\d{2}\b/g, '') // Ta bort årgång
+            .replace(/[^\w\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const logName = normalize(logWineName);
+        const systemName = normalize(systemWineName);
+        // Kolla om namnen liknar varandra tillräckligt
+        const logWords = logName.split(' ').filter(w => w.length > 2);
+        const systemWords = systemName.split(' ').filter(w => w.length > 2);
+        // Minst 2 ord måste matcha, eller första ordet + något annat
+        let matches = 0;
+        for (const logWord of logWords) {
+            if (systemWords.some(systemWord => systemWord.includes(logWord) || logWord.includes(systemWord))) {
+                matches++;
+            }
+        }
+        return matches >= 2 || (matches >= 1 && logWords.length > 0 && systemWords.length > 0 &&
+            (logWords[0].includes(systemWords[0]) || systemWords[0].includes(logWords[0])));
+    }
+    async sendMultipleWineOptions(message, originalQuery, wines) {
+        const embed = new EmbedBuilder()
+            .setTitle(`🍷 Hittade flera viner för "${originalQuery}"`)
+            .setDescription('Här är de bästa träffarna:')
+            .setColor(0x8B0000);
+        wines.forEach((wine, index) => {
+            const grapes = wine.grapes && wine.grapes.length > 0 ? wine.grapes.join(', ') : 'Okänd druva';
+            const vintage = wine.vintage ? ` (${wine.vintage})` : '';
+            const origin = wine.originLevel2 || wine.originLevel1 || wine.country;
+            const wineName = wine.productNameThin ?
+                `${wine.productNameBold} ${wine.productNameThin}` :
+                wine.productNameBold || 'Okänt vin';
+            embed.addFields({
+                name: `${index + 1}. ${wineName}${vintage}`,
+                value: `📍 ${origin}\n🍇 ${grapes}\n💰 ${wine.price} kr | 🆔 ${wine.productId}`,
+                inline: false,
+            });
+        });
+        embed.setFooter({ text: 'Skriv !vin [exakt vinnamn] för detaljerad analys' });
+        await message.reply({ embeds: [embed] });
     }
     async start() {
         await this.client.login(process.env.DISCORD_TOKEN);
