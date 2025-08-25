@@ -175,6 +175,15 @@ Alla finns i fast sortiment så du hittar dem på de flesta Systembolag. Skål! 
 3. **Discord sist** - Social funktionalitet
 4. **Iterativ förbättring** - Lägg till funktioner baserat på användning
 
+## Viktigt om processhantering
+
+**KRITISKT:** Om du behöver döda alla processer (t.ex. med taskkill), **MÅSTE** du först dokumentera:
+1. Vad du jobbar med just nu
+2. Vilka todos som är aktiva 
+3. Nästa steg i processen
+
+Detta så att du kommer ihåg vad du höll på med när du startar om systemet.
+
 ---
 
 **OBS för Claude:** Johan är tekniskt kunnig men vill ha konkret kod och tydliga instruktioner. Fokusera på working solutions över teoretiska diskussioner. Han uppskattar humor och vardagligt språk när det passar kontextet.

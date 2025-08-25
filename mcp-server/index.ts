@@ -84,17 +84,47 @@ class SystembolagetMCPServer {
     this.loadWineData();
   }
 
-  private loadWineData(): void {
+  private async loadWineData(): Promise<void> {
     try {
-      // Läs data från shared-mappen
-      const dataPath = join(__dirname, '../../shared/wine_data.json');
-      const rawData = readFileSync(dataPath, 'utf-8');
-      this.wines = JSON.parse(rawData);
-      console.error(`Loaded ${this.wines.length} wine products from ${dataPath}`);
+      console.error('Loading wine data from JSON database...');
+      
+      // Läs från JSON-fil istället för API (upp ett steg från mcp-server mappen)
+      const dataPath = join(__dirname, '../../shared/wine_database.json');
+      const jsonData = readFileSync(dataPath, 'utf8');
+      const data = JSON.parse(jsonData);
+      
+      this.wines = data.wines || [];
+      console.error(`Loaded ${this.wines.length} wine products from JSON database`);
+      console.error(`Database exported: ${data.metadata?.exportedAt}`);
+      console.error(`Total wines in DB: ${data.metadata?.totalWines || 'unknown'}`);
+      
     } catch (error) {
-      console.error('Failed to load wine data:', error);
-      console.error('Please download wine data and save as wine_data.json');
-      console.error('You can get data from: https://github.com/AlexGustafsson/systembolaget-api-data');
+      console.error('Failed to load wine data from JSON:', error);
+      console.error('Make sure you have exported the database with: npm run export-wines');
+      console.error('Or run: cd scripts && node export-full-database.js');
+      
+      // Fallback till API om JSON inte fungerar
+      try {
+        console.error('Falling back to API...');
+        const response = await fetch('http://localhost:3000/api/v1/products?limit=50000');
+        if (response.ok) {
+          const apiData = await response.json();
+          const wineProducts = (apiData.products || apiData).filter((wine: any) => {
+            const category = wine.categoryLevel1 || wine.categoryLevel2 || '';
+            return category.toLowerCase().includes('vin');
+          });
+          this.wines = wineProducts.filter((wine: any) => 
+            !wine.isDiscontinued && 
+            !wine.isSupplierTemporaryNotAvailable &&
+            !wine.isCompletelyOutOfStock &&
+            !wine.isTemporaryOutOfStock &&
+            this.isStandardBottleSize(wine.volumeText)
+          );
+          console.error(`Fallback: Loaded ${this.wines.length} wines from API`);
+        }
+      } catch (fallbackError) {
+        console.error('API fallback also failed:', fallbackError);
+      }
     }
   }
 

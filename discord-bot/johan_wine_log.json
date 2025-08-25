@@ -1,0 +1,637 @@
+{
+  "metadata": {
+    "created": "2025-08-25",
+    "description": "Johan's Complete Wine Log with Ratings and Tasting Notes",
+    "total_wines": 65,
+    "rating_scale": "0-100"
+  },
+  "wines": [
+    {
+      "rating": 94,
+      "name": "Felton Road Calvert Pinot Noir 2022",
+      "country": "Nya Zeeland",
+      "region": "Central Otago",
+      "price": "679:-",
+      "tasting_notes": "Fantastisk frukt med ett maffigt uttryck av druva och plats.",
+      "comments": "Den genialiske vinmakaren Nigel Greening gör förtrollande bra pinot noir-viner.",
+      "article_number": "70219"
+    },
+    {
+      "rating": 94,
+      "name": "Von Winning Forster Pechstein Riesling GG 2022",
+      "country": "Tyskland",
+      "region": "Pfalz",
+      "price": "759:-",
+      "tasting_notes": "Smart och snyggt, och samtidigt med extra allt tack vare fatlagring.",
+      "comments": "Knockout-riesling som golvade mig totalt på Systembolagets provning.",
+      "article_number": "93687"
+    },
+    {
+      "rating": 94,
+      "name": "Bollinger PN VZ19",
+      "country": "Frankrike",
+      "region": "Champagne",
+      "price": "1099:-",
+      "tasting_notes": "Kanonchampagne för källaren, i den rika skolan med brioche, vinetheter, amaron och mogen citrus.",
+      "comments": "Strålande årgång av Bollingers specialare som görs på merparten pinot noir från 2019.",
+      "article_number": "95374"
+    },
+    {
+      "rating": 93,
+      "name": "Levet Côte-Rôtie Améthyste 2020",
+      "country": "Frankrike",
+      "region": "Rhône",
+      "price": "681:-",
+      "tasting_notes": "En långlagring eller till boeuf bourguignon med smörkokta potatisar.",
+      "comments": "Året började med ett dundersläpp som frontades av den här maffiga och högaromatiska syrah.",
+      "article_number": null
+    },
+    {
+      "rating": 93,
+      "name": "Biondi-Santi Rosso di Montalcino 2021",
+      "country": "Italien",
+      "region": "Toscana",
+      "price": "879:-",
+      "tasting_notes": "Sangiovese i superform som också gärna kan få vila ett par år.",
+      "comments": "Årets bästa andravin är Biondi-Santis rosso.",
+      "article_number": "95208"
+    },
+    {
+      "rating": 92,
+      "name": "Produttori del Barbaresco Barbaresco 2019",
+      "country": "Italien",
+      "region": "Piemonte",
+      "price": "399:-",
+      "tasting_notes": "Elegant och rödfruktig med finkorning tanninstruktur.",
+      "comments": "Kooperativet i Barbaresco sopade banan med konkurrenterna i årgång 2019. Ny årgång tillgänglig.",
+      "article_number": "95435"
+    },
+    {
+      "rating": 92,
+      "name": "Cristom Mt Jefferson Cuvée Pinot Noir 2022",
+      "country": "USA",
+      "region": "Oregon",
+      "price": "429:-",
+      "tasting_notes": "Tonerande bra pinot med väl avvägd struktur och precis lagom med frukt.",
+      "comments": "Koncentrerat utan att bli för extraherat. Perfekt till burgogne.",
+      "article_number": "94122"
+    },
+    {
+      "rating": 92,
+      "name": "Evening Land Seven Springs Chardonnay 2022",
+      "country": "USA",
+      "region": "Oregon",
+      "price": "455:-",
+      "tasting_notes": "Allt de slimmade chardonnayvinerna konkurrerar redan med alla de bästa.",
+      "comments": "Blir bara bättre ju äldre vinrankorna blir.",
+      "article_number": "93684"
+    },
+    {
+      "rating": 92,
+      "name": "Alheit Hemelrand Vine Garden 2021",
+      "country": "Sydafrika",
+      "region": "Hemel-en-Aarde",
+      "price": "339:-",
+      "tasting_notes": "Elegant och minimalist med chardonnay som dominerande druvsort.",
+      "comments": "Håll ögonen på Egon Hemel-en-Aarde.",
+      "article_number": "78505"
+    },
+    {
+      "rating": 92,
+      "name": "Domaine des Carlines Trémoulette Côtes du Jura Chardonnay 2020",
+      "country": "Frankrike",
+      "region": "Jura",
+      "price": "329:-",
+      "tasting_notes": "Mineralsalt och vaxig citruskaramellig karaktär.",
+      "comments": "Extremt adressdygligt vin där ursprunget övertrumfar druvan. Upptoppat och snyggt med utveckling framför sig.",
+      "article_number": "93163"
+    },
+    {
+      "rating": 91,
+      "name": "Fattoria Poggerino Chianti Classico 2021",
+      "country": "Italien",
+      "region": "Toscana",
+      "price": "249:-",
+      "tasting_notes": "Expressiv sangiovese där alla cylindrar med körsbärstoner är i full effekt.",
+      "comments": "Finns också viss struktur och örtighet.",
+      "article_number": "93258"
+    },
+    {
+      "rating": 91,
+      "name": "Alain Graillot Crozes-Hermitage 2021",
+      "country": "Frankrike",
+      "region": "Rhônedalen",
+      "price": "349:-",
+      "tasting_notes": "Viol, lavendel, hallon, vitpeppar och lagerblad.",
+      "comments": "Årets kanske mest förhandstippade lansering från Graillot.",
+      "article_number": "95183"
+    },
+    {
+      "rating": 91,
+      "name": "Boekenhoutskloof Syrah 2020",
+      "country": "Sydafrika",
+      "region": "Swartland",
+      "price": "379:-",
+      "tasting_notes": "Mörk frukt, peppar och lakrits.",
+      "comments": "Supergrym och detaljerad syrah.",
+      "article_number": "93209"
+    },
+    {
+      "rating": 91,
+      "name": "Tahbilk Old Vines Cabernet Shiraz 2021",
+      "country": "Australien",
+      "region": "Nagambie Lakes",
+      "price": null,
+      "tasting_notes": "Mycket smak, bra grillvin",
+      "comments": "Richly flavoured and expressive, bay leaf, mint and tobacco with plum and berry fruits on a serious palate",
+      "article_number": null,
+      "food_pairing": "Gochujang-marinerat flappstek + asiatiska potatiser",
+      "date": "2025-08-23"
+    },
+    {
+      "rating": 90,
+      "name": "Domaine Terre d'Aigle Savennières Les Deux 2022",
+      "country": "Frankrike",
+      "region": "Loiredalen",
+      "price": "249:-",
+      "tasting_notes": "Lång, läskande och strukturerad med en eftersmak som inte vill ge sig.",
+      "comments": "Mer chenin blanc till folket – helst i den här mineralefata stilen.",
+      "article_number": "94939"
+    },
+    {
+      "rating": 90,
+      "name": "Fontaine du Clos Vacqueyras Reflets de l'Âme 2022",
+      "country": "Frankrike",
+      "region": "Rhônedalen",
+      "price": "199:-",
+      "tasting_notes": "Mörkröd frukt med fat, massor av struktur och djup.",
+      "comments": "Vintervärmare med tydliga adresser som görs på druvorna grenache och syrah.",
+      "article_number": "93266"
+    },
+    {
+      "rating": 90,
+      "name": "Domaine de la Croisée Pouilly Fumé Magma 2022",
+      "country": "Frankrike",
+      "region": "Loiredalen",
+      "price": "229:-",
+      "tasting_notes": "Mineralbomb på sauvignon blanc.",
+      "comments": "Elegant uttryck med citronskal och blårök. Samtida Pouilly Fumé i januari.",
+      "article_number": "95455"
+    },
+    {
+      "rating": 90,
+      "name": "Pierre Peters Cuvée de Réserve Grand Cru",
+      "country": "Frankrike",
+      "region": "Champagne",
+      "price": "489:-",
+      "tasting_notes": "Lätt blommig frukt och försiktigt krämig mousse.",
+      "comments": "Favoritbubbel i fasta sortimentet.",
+      "article_number": "7350"
+    },
+    {
+      "rating": 90,
+      "name": "Nicolas Feuillatte Blanc de Blancs Collection 2018",
+      "country": "Frankrike",
+      "region": "Champagne",
+      "price": "399:-",
+      "tasting_notes": "Elegant och krispig.",
+      "comments": "Prisvärd årgångschampagne.",
+      "article_number": "7592"
+    },
+    {
+      "rating": 90,
+      "name": "André Clouet Chalky Brut",
+      "country": "Frankrike",
+      "region": "Champagne",
+      "price": "479:-",
+      "tasting_notes": "Mineraliskt innehåll.",
+      "comments": "Spektakulära förpackningar och bra innehåll.",
+      "article_number": "54533"
+    },
+    {
+      "rating": 90,
+      "name": "Nyetimber Classic Cuvee",
+      "country": "England",
+      "region": "West Sussex",
+      "price": "499:-",
+      "tasting_notes": "Mandel, citrus och brioche.",
+      "comments": "Säkert kort bland brittiska bubbelviner.",
+      "article_number": "96018"
+    },
+    {
+      "rating": 89,
+      "name": "Piero Benevelli Langhe Nebbiolo 2023",
+      "country": "Italien",
+      "region": "Langhe",
+      "price": "219:-",
+      "tasting_notes": "Elegant och lågmäld röd frukt kantad av blodapelsin och lakrits. Fina men bestämda traddo-tanniner.",
+      "comments": "Barolo och Barbaresco i all ära, men ibland smäller faktiskt lillebrorsvinet Langhe Nebbiolo högre. Drick nu och fem år framöver.",
+      "article_number": "92087"
+    },
+    {
+      "rating": 89,
+      "name": "Robert Hall Cabernet Sauvignon",
+      "country": "USA",
+      "region": "Kalifornien, Paso Robles",
+      "price": "229:-",
+      "tasting_notes": "Fylligt och smakrikt vin med toner av svarta vinbär, mogen röd frukt och mörk choklad.",
+      "comments": "Bland det godaste jag druckit. Ett väldigt typiskt rödvin. Fast in a good way. En Napa Cab. Tung.",
+      "article_number": "95150"
+    },
+    {
+      "rating": 89,
+      "name": "Substance Cs Cabernet Sauvignon",
+      "country": "USA",
+      "region": "Washington State, Columbia Valley",
+      "price": "199:-",
+      "tasting_notes": "Nyanserad, fruktig smak med fatkaraktär, inslag av svarta vinbär, plommon, kakao, örter, ceder och kaffe.",
+      "comments": "RIKTIGT gott när en vill ha lite strävare än en Napa Cab.",
+      "article_number": "74083"
+    },
+    {
+      "rating": 89,
+      "name": "Girolamo Russo 'a Rina Etna Rosso 2022",
+      "country": "Italien",
+      "region": "Sicilien",
+      "price": "231:-",
+      "tasting_notes": "Ettna vin med rödvinskaraktär.",
+      "comments": "Girolamo Russos instegsvin sålde slut i ett nafs trots generös svensk tilldelning.",
+      "article_number": null
+    },
+    {
+      "rating": 89,
+      "name": "Nestarec Oragech 2022",
+      "country": "Tjeckien",
+      "region": null,
+      "price": "221:-",
+      "tasting_notes": "Friskt apelsinaromatiskt, slankt och energiskt.",
+      "comments": "Årets oranga vin kom redan i mars, från den tjeckiska mästaren av skalmacererade viner.",
+      "article_number": null
+    },
+    {
+      "rating": 89,
+      "name": "Celler Kripta Barrica Gran Reserva 2020",
+      "country": "Spanien",
+      "region": "Cava",
+      "price": "275:-",
+      "tasting_notes": "Tydlig jästkaraktär och mogen frukt.",
+      "comments": "Inbjudande och generös cava.",
+      "article_number": "90309"
+    },
+    {
+      "rating": 89,
+      "name": "Reyneke Biodynamic Syrah 2020",
+      "country": "Sydafrika",
+      "region": "Stellenbosch",
+      "price": "209:-",
+      "tasting_notes": "Frisk syra och elegans.",
+      "comments": "Biodynamisk producent som har hittat balansen.",
+      "article_number": "87831"
+    },
+    {
+      "rating": 89,
+      "name": "Andrew Murray Vineyards Syrah Tous les Jours 2020",
+      "country": "USA",
+      "region": "Kalifornien",
+      "price": "200:-",
+      "tasting_notes": "Blommig och örtig.",
+      "comments": "Det oslagna Kalifornienalternativet.",
+      "article_number": "93070"
+    },
+    {
+      "rating": 89,
+      "name": "Spinifex Syrah 2019",
+      "country": "Australien",
+      "region": "Barossa Valley",
+      "price": "229:-",
+      "tasting_notes": "Bär och örter.",
+      "comments": "Långt från de bombastiska syrah-vinerna.",
+      "article_number": "93208"
+    },
+    {
+      "rating": 89,
+      "name": "Peperosso",
+      "country": "Italien",
+      "region": "Calabria",
+      "grape": "Magliocco & Merlot",
+      "price": "4,5 euro",
+      "tasting_notes": "Lättdrucket. Mjukt. Fruktigt. Lent. Runt.",
+      "comments": "Dracks i Italien under vår resa.",
+      "article_number": null
+    },
+    {
+      "rating": 89,
+      "name": "Barbaresco 2021",
+      "country": "Italien",
+      "region": "Piemonte",
+      "grape": "Nebbiolo",
+      "producer": "Terre da Vino",
+      "price": "10 euro",
+      "tasting_notes": "Goda tanniner. Behöver luft. Kanteras! Värme. Växer. Rosor.",
+      "comments": "Inhandlad i supermarket i Italien.",
+      "article_number": null
+    },
+    {
+      "rating": 88,
+      "name": "Dönnhoff Riesling Trocken 2023",
+      "country": "Tyskland",
+      "region": "Nahe",
+      "price": "185:-",
+      "tasting_notes": "Nyanserad, fruktig, påtagligt frisk smak med inslag av gröna äpplen, rökig mineral, vita vinbär, päron, örter och citron.",
+      "comments": "Fruktansvärt gott. Med lite spets. Åts till seafood pasta.",
+      "article_number": "92995"
+    },
+    {
+      "rating": 88,
+      "name": "Domaine Trouillet Mâcon-Vinzelles Les Morandes 2021",
+      "country": "Frankrike",
+      "region": "Bourgogne",
+      "price": "199:-",
+      "tasting_notes": "Trollar fram fräschör och driver vinets ekfatslagring.",
+      "comments": "Vitt bourgogne som levererar stort vad gäller adress per krona.",
+      "article_number": "81800"
+    },
+    {
+      "rating": 88,
+      "name": "Guímaro Camino Real 2021",
+      "country": "Spanien",
+      "region": "Ribeira Sacra",
+      "price": "199:-",
+      "tasting_notes": "Krydd, blålila toner, hallon, blåbär och viol.",
+      "comments": "Mycket kryddig årgång. Fältblend av flera druvor.",
+      "article_number": "93306"
+    },
+    {
+      "rating": 88,
+      "name": "Simonsig Cuvée Royale Blanc de Blancs 2021",
+      "country": "Sydafrika",
+      "region": "Stellenbosch",
+      "price": "229:-",
+      "tasting_notes": "Brödighet, citrus och krämig mousse.",
+      "comments": "Hundra procent chardonnay enligt traditionell metod.",
+      "article_number": "95048"
+    },
+    {
+      "rating": 88,
+      "name": "G.D. Vajra Langhe Nebbiolo 2023",
+      "country": "Italien",
+      "region": "Piemonte",
+      "price": "180:-",
+      "tasting_notes": "Röd frukt och örter.",
+      "comments": "Ung och pigg nebbiolo med elegant körsbärsfrukt.",
+      "article_number": "78517"
+    },
+    {
+      "rating": 88,
+      "name": "Markus Molitor Haus Klosterberg Riesling 2022",
+      "country": "Tyskland",
+      "region": "Mosel",
+      "price": "157:-",
+      "tasting_notes": "Frukt och syra.",
+      "comments": "Kombination av mineralitet och krämig textur.",
+      "article_number": "85037"
+    },
+    {
+      "rating": 88,
+      "name": "Scotchmans Hill Swan Bay Chardonnay 2023",
+      "country": "Australien",
+      "region": "Victoria",
+      "price": "179:-",
+      "tasting_notes": "Ett klockrent exempel på sval och modern australiensisk chardonnay.",
+      "comments": "Smakar citron, persika och mineralitet.",
+      "article_number": "10857"
+    },
+    {
+      "rating": 88,
+      "name": "Zarate Albariño 2023",
+      "country": "Spanien",
+      "region": "Rias Baixas",
+      "price": "219:-",
+      "tasting_notes": "Läskande vin med struktur, citrus och grapefrukt.",
+      "comments": "Från Albariñons vagga. Toppen till tonfiskpasta och asiatisk mat.",
+      "article_number": "94442"
+    },
+    {
+      "rating": 88,
+      "name": "Adega de Monção Vinho Verde 2023",
+      "country": "Portugal",
+      "region": "Vinho Verde",
+      "price": "129:-",
+      "tasting_notes": "Frisk, citrus och gröna äpplen.",
+      "comments": "Stiltypisk vinho verde.",
+      "article_number": "7537"
+    },
+    {
+      "rating": 87,
+      "name": "Michelini i Muftato En El Camino 2021",
+      "country": "Spanien",
+      "grape": "Mencía",
+      "price": "149:-",
+      "tasting_notes": "En mycket uttrycksfull tolkning av framtidsdruvan mencía.",
+      "comments": "Det enda jag önskar mig i julklapp förutom snälla barn och fred på jorden är att det här vinet skulle finnas i det fasta sortimentet.",
+      "article_number": null
+    },
+    {
+      "rating": 87,
+      "name": "Clotilde Davenne Brut Extra Crémant de Bourgogne",
+      "country": "Frankrike",
+      "region": "Bourgogne",
+      "price": "175:-",
+      "tasting_notes": "Äpple, mineral och örter.",
+      "comments": "Påtlig, krispig och knastertorr crémant.",
+      "article_number": "7725"
+    },
+    {
+      "rating": 87,
+      "name": "Katharina Wechsler Riesling Trocken 2023",
+      "country": "Tyskland",
+      "region": "Pfalz",
+      "price": "189:-",
+      "tasting_notes": "Läskande och mineraliskt med galet pigg frukt som drar åt citrus, päron och pomelo.",
+      "comments": "Rieslingfavorit som får en att längta efter vårsolens första värmande strålar. Hundra procent krisp.",
+      "article_number": "95460"
+    },
+    {
+      "rating": 86,
+      "name": "Hatzimichalis Assyrtiko Alepotrypa 2023",
+      "country": "Grekland",
+      "region": "Atalanti Valley",
+      "price": "139:-",
+      "tasting_notes": "Stark doftförnimmelse av sommarsemetern i Grekland.",
+      "comments": "Ett vardagsfavoritvin i det begynnande höstmörkret.",
+      "article_number": "92281"
+    },
+    {
+      "rating": 86,
+      "name": "La Folle Noire d'Ambat Le Roc 2021",
+      "country": "Frankrike",
+      "region": "Fronton",
+      "price": "139:-",
+      "tasting_notes": "Personligt, angenämt stökigt och ytterst grytnetpotentiellt.",
+      "comments": "Februari månads röda husvin från det relativt okända vinområdet Fronton.",
+      "article_number": null
+    },
+    {
+      "rating": 86,
+      "name": "Pietramore Méthode Ancestrale Trebbiano",
+      "country": "Italien",
+      "region": "Abruzzerna",
+      "price": "149:-",
+      "tasting_notes": "Apelsinskal, mimosa och citrus.",
+      "comments": "Färgglatt, ofiltrerat och smakrikt vin.",
+      "article_number": "94927"
+    },
+    {
+      "rating": 86,
+      "name": "Terrazze Dell'Etna Carusu 2021",
+      "country": "Italien",
+      "region": "Sicilien",
+      "price": "179:-",
+      "tasting_notes": "Rött vin med röda bär, lätt rökighet och örter.",
+      "comments": "Ett träffsäkert baroloupplevelse till mindre kostnad.",
+      "article_number": "92878"
+    },
+    {
+      "rating": 85,
+      "name": "Monteruscio Dolcetto 2021",
+      "country": "Italien",
+      "region": "Piemonte, Dogliani",
+      "price": "119:-",
+      "tasting_notes": "Charmig och rustik till charkbrickan.",
+      "comments": "När nebbiolo börjar bli dyrt på riktigt och barbera allt oftare passerar 16-procentsgränsen vänder vi blickarna mot druvan dolcetto.",
+      "article_number": "20076"
+    },
+    {
+      "rating": 85,
+      "name": "Montevini Il Brutto Asolo Prosecco Superiore Sui Lieviti 2022",
+      "country": "Italien",
+      "region": "Veneto",
+      "price": "149:-",
+      "tasting_notes": "Päronläskt.",
+      "comments": "Smakrik och ofiltrerad version med låg sockerhalt.",
+      "article_number": "2527"
+    },
+    {
+      "rating": 85,
+      "name": "The Butcher Pinot Noir",
+      "country": "Österrike",
+      "region": null,
+      "price": "169:-",
+      "tasting_notes": "Elegant rött vin med bäriga toner.",
+      "comments": "Perfekt för att slödricka.",
+      "article_number": null
+    },
+    {
+      "rating": 84,
+      "name": "Anselmo Mendes Alvarinho Contacto 2023",
+      "country": "Portugal",
+      "region": "Vinho Verde",
+      "price": "145:-",
+      "tasting_notes": "Läsksande, luftig och fruktigt fint med det grönaste vinområdet i norra Portugal.",
+      "comments": "Troligtvis den bästa årgången av Anselmo Mendes svensk-populära instegsvin.",
+      "article_number": "8400"
+    },
+    {
+      "rating": 84,
+      "name": "Kir-Yianni Naoussa Xinomavro 2021",
+      "country": "Grekland",
+      "region": "Naoussa",
+      "price": "159:-",
+      "tasting_notes": "Svalodlad och stram med tanniner och syra.",
+      "comments": "Xinomavro levererar ett intressant alternativ till nebbiolo och pinot noir.",
+      "article_number": "76506"
+    },
+    {
+      "rating": 84,
+      "name": "Barton & Guestier Crémant de Bourgogne",
+      "country": "Frankrike",
+      "region": "Bourgogne",
+      "price": "139:-",
+      "tasting_notes": "Noter av chardonnay och pinot noir.",
+      "comments": "Sympatisk och något återhållsam crémant.",
+      "article_number": "7537"
+    },
+    {
+      "rating": 84,
+      "name": "P.Lex Langhe Nebbiolo (2022)",
+      "country": "Italien",
+      "region": "Piemonte",
+      "price": "145:-",
+      "tasting_notes": "",
+      "comments": "",
+      "article_number": null
+    },
+    {
+      "rating": 78,
+      "name": "Kung Fu Girl Riesling",
+      "country": "USA",
+      "region": null,
+      "price": "149:-",
+      "tasting_notes": "",
+      "comments": "",
+      "article_number": null
+    },
+    {
+      "rating": 78,
+      "name": "Cirò Rosso Classico 2023",
+      "country": "Italien",
+      "region": null,
+      "price": null,
+      "tasting_notes": "",
+      "comments": "Dracks i Italien under vår resa.",
+      "article_number": null
+    },
+    {
+      "rating": 75,
+      "name": "Fontanafredda Ebbio Langhe Nebbiolo",
+      "country": "Italien",
+      "region": null,
+      "price": "149:-",
+      "tasting_notes": "",
+      "comments": "",
+      "article_number": null
+    },
+    {
+      "rating": 67,
+      "name": "P.Lex Pinot Grigio",
+      "country": "Italien",
+      "region": null,
+      "price": "109:-",
+      "tasting_notes": "",
+      "comments": "",
+      "article_number": null
+    },
+    {
+      "rating": 65,
+      "name": "Periquita Reserva",
+      "country": "Portugal",
+      "region": null,
+      "price": "109:-",
+      "tasting_notes": "",
+      "comments": "",
+      "article_number": null
+    }
+  ],
+  "statistics": {
+    "highest_rated": 94,
+    "lowest_rated": 65,
+    "average_rating": 86.9,
+    "most_expensive": "1099:-",
+    "least_expensive": "109:-",
+    "countries": {
+      "Italien": 18,
+      "Frankrike": 12,
+      "USA": 6,
+      "Tyskland": 4,
+      "Sydafrika": 4,
+      "Spanien": 4,
+      "Australien": 3,
+      "Portugal": 3,
+      "Grekland": 2,
+      "England": 1,
+      "Nya Zeeland": 1,
+      "Tjeckien": 1,
+      "Österrike": 1
+    }
+  }
+}

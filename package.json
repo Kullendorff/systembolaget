@@ -15,7 +15,10 @@
     "mcp:start": "npm run start --workspace=mcp-server",
     "bot:build": "npm run build --workspace=discord-bot",
     "bot:start": "npm run start --workspace=discord-bot",
+    "bot:run": "npm run build --workspace=discord-bot && npm run start --workspace=discord-bot",
     "download-data": "node scripts/download-data.js",
+    "export-wines": "node scripts/export-full-database.js",
+    "update-wines": "npm run export-wines && npm run mcp:build",
     "setup": "npm install && npm run download-data"
   },
   "devDependencies": {

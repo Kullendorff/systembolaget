@@ -16,6 +16,8 @@ build/
 
 # Database and data files
 shared/wine_data_backup.json
+shared/wine_database.json
+shared/backups/
 
 # Logs
 *.log
