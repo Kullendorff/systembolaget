@@ -2,10 +2,12 @@
 node_modules/
 */node_modules/
 
-# Environment files
+# Environment files - CRITICAL SECURITY
 .env
 */.env
 .env.local
+**/.env
+**/.*env*
 
 # Build outputs
 dist/
@@ -33,3 +35,7 @@ Thumbs.db
 
 # Local settings
 .claude/settings.local.json
+
+# Discord tokens and secrets
+**/discord-bot/.env
+**/mcp-server/.env
