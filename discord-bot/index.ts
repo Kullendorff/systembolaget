@@ -517,6 +517,7 @@ Skriv ett naturligt, entusiastiskt svar på svenska som:
 4. Förklarar kort varför just dessa viner valts
 5. Avslutar med en uppmuntrande kommentar
 
+KRITISKT: Prata ENDAST om de viner som finns i listan ovan. Hitta INTE på andra viner. Om det bara finns ett vin i listan, skriv bara om det vinet.
 VIKTIGT: Håll svaret till MAX 150 ord för att passa i Discord. Vardagligt språk, som en kunnig vän.`;
 
     const response = await this.anthropic.messages.create({
