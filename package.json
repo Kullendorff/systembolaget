@@ -1,0 +1,28 @@
+{
+  "name": "systembolaget-wine-tools",
+  "version": "1.0.0",
+  "description": "Wine recommendation tools using Systembolaget data",
+  "private": true,
+  "workspaces": [
+    "poc",
+    "mcp-server",
+    "discord-bot"
+  ],
+  "scripts": {
+    "poc": "node poc/index.js",
+    "poc:test": "node poc/index.js test",
+    "mcp:build": "npm run build --workspace=mcp-server",
+    "mcp:start": "npm run start --workspace=mcp-server",
+    "bot:build": "npm run build --workspace=discord-bot",
+    "bot:start": "npm run start --workspace=discord-bot",
+    "download-data": "node scripts/download-data.js",
+    "setup": "npm install && npm run download-data"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

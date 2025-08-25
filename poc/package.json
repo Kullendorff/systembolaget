@@ -1,0 +1,10 @@
+{
+  "name": "wine-poc",
+  "version": "1.0.0",
+  "description": "Proof of concept for wine search",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js test"
+  }
+}

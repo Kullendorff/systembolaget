@@ -1,0 +1,30 @@
+DISCORD BOT INVITE - FELSÖKNING
+================================
+
+Bot Client ID: 1409323230925426781
+Bot Name: BolisSpionen
+
+TESTLÄNKAR (prova i ordning):
+============================
+
+1. Enklaste (bara bot-scope):
+https://discord.com/api/oauth2/authorize?client_id=1409323230925426781&scope=bot
+
+2. Med grundbehörigheter:
+https://discord.com/api/oauth2/authorize?client_id=1409323230925426781&permissions=83968&scope=bot
+
+3. Via Discord's egen OAuth:
+https://discord.com/oauth2/authorize?client_id=1409323230925426781&scope=bot&permissions=83968
+
+KONTROLLERA EFTER INVITE:
+========================
+1. Gå till Discord-servern
+2. Titta i medlemslistan (höger sida)
+3. Leta efter "BolisSpionen" med BOT-märkning
+4. Eller kolla Server Settings → Members
+
+OM FORTFARANDE PROBLEM:
+======================
+- Kontrollera att du har "Manage Server" behörighet
+- Prova invite i inkognito-läge
+- Kolla att bot-tokenen är korrekt i Developer Portal

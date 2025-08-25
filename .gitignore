@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files
+.env
+*/.env
+.env.local
+
+# Build outputs
+dist/
+*/dist/
+build/
+
+# Database and data files
+shared/wine_data_backup.json
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local settings
+.claude/settings.local.json

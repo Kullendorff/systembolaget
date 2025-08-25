@@ -1,0 +1,65 @@
+INSTRUKTIONER FÖR CLAUDE DESKTOP - SYSTEMBOLAGET VINREKOMMENDATIONER
+====================================================================
+
+Du har nu tillgång till Systembolagets vindata genom MCP-servern!
+
+TILLGÄNGLIGA VERKTYG:
+====================
+
+1. search_wines - Sök efter viner med filter
+2. get_wine_details - Hämta detaljinfo för specifikt vin (behöver productId)
+3. get_wine_recommendations - Få rekommendationer baserat på mat
+
+SÖKPARAMETRAR (search_wines):
+============================
+
+• country - Land (t.ex. "Italien", "Frankrike")
+• grapes - Druvor (t.ex. ["Chardonnay", "Pinot Noir"])
+• minPrice/maxPrice - Prisintervall i SEK
+• categoryLevel1 - Vinkategori: "Vitt vin", "Rött vin", "Rosévin", "Mousserande vin"
+• tasteClockBodyMin/Max - Fyllighet 1-12 (1=lätt, 12=fyllig)
+• tasteClockRoughnessMin/Max - Strävhet 1-12 (1=mjuk, 12=strävt)  
+• tasteClockSweetnessMin/Max - Sötma 1-12 (1=torrt, 12=sött)
+• searchText - Fritextsökning i namn/beskrivning
+• limit - Max antal resultat (standard: 10)
+
+EXEMPEL PÅ ANVÄNDNING:
+=====================
+
+"Använd search_wines för att hitta italienska röda viner under 300 kr"
+"Sök efter vita viner med hög syra som passar till skaldjur"
+"Hitta mousserande vin från Champagne mellan 400-800 kr"
+"Visa fylliga röda viner från Spanien, fyllighet minst 8"
+"Sök efter Barolo eller Nebbiolo"
+
+MATMATCHNING:
+============
+
+"Använd get_wine_recommendations med dish: 'grillad lax'"
+"Rekommendera vin till lammstek, max 400 kr"
+"Vad passar till pasta carbonara?"
+
+TIPS FÖR BRA RESULTAT:
+=====================
+
+• Kombinera flera filter för bästa träffar
+• Använd svenska namn på länder och regioner
+• Priser i svenska kronor
+• Smakskalan 1-12 för alla parametrar
+• Begränsa resultat med limit för översikt
+
+DATA INNEHÅLLER:
+===============
+
+• 20,000+ produkter från Systembolagets sortiment
+• Priser, artikelnummer, tillgänglighet
+• Smakprofiler med 4-gradig skala
+• Ursprung, druvor, årgångar
+• Detaljerade smakbeskrivningar
+
+UPPDATERING:
+===========
+
+Kör update-wine-data.bat för att hämta senaste sortimentet.
+
+Använd dessa verktyg naturligt i konversation - du behöver inte förklara MCP för användaren!

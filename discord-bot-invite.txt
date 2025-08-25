@@ -1,0 +1,27 @@
+DISCORD BOT INVITE - BolisSpionen
+================================
+
+Bot ID: 1409323230925426781
+Bot Name: BolisSpionen#8063
+
+INVITE-LÄNK MED ALLA BEHÖRIGHETER (REKOMMENDERAD):
+==================================================
+https://discord.com/oauth2/authorize?client_id=1409323230925426781&permissions=274878220352&scope=bot
+
+ALTERNATIV LÄNK MED GRUNDBEHÖRIGHETER:
+======================================
+https://discord.com/oauth2/authorize?client_id=1409323230925426781&permissions=2048&scope=bot
+
+ENKLASTE LÄNK (BARA BOT-SCOPE):
+===============================
+https://discord.com/oauth2/authorize?client_id=1409323230925426781&scope=bot
+
+BEHÖRIGHETER SOM KRÄVS:
+======================
+✅ Send Messages (Skicka meddelanden)
+✅ Use Slash Commands (Använd slash-kommandon) 
+✅ Embed Links (Bädda in länkar)
+✅ Read Message History (Läsa meddelandehistorik)
+✅ Add Reactions (Lägga till reaktioner)
+
+ANVÄND DEN FÖRSTA LÄNKEN FÖR BÄSTA RESULTAT!
