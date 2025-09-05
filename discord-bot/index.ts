@@ -291,9 +291,10 @@ class WineBot {
       // Kolla om användaren vill ha dyrare viner (har satt max-pris)
       const maxPriceMatch = query.match(/max (\d+)|under (\d+)|högst (\d+)/i);
       const preferHigherPrices = !!maxPriceMatch;
+      const targetPrice = searchParams.targetPrice;
 
       // Sök i vindatabasen
-      let results = this.searchWines(searchParams, preferHigherPrices);
+      let results = this.searchWines(searchParams, preferHigherPrices, targetPrice);
       console.log(`[DEBUG] Search found ${results.length} wines before personal preferences`);
       
       // Boosta resultat baserat på Johans profil om det är han
@@ -337,6 +338,7 @@ Svara med JSON enligt detta format:
   "grapes": ["lista med druvor"] eller null,
   "minPrice": nummer eller null,
   "maxPrice": nummer eller null,
+  "targetPrice": nummer eller null (det pris användaren nämnde),
   "categoryLevel1": "Rött vin/Vitt vin/Rosévin/Mousserande vin" eller null,
   "tasteClockBodyMin": 1-12 eller null,
   "tasteClockBodyMax": 1-12 eller null,
@@ -348,14 +350,18 @@ Exempel:
 "Italienskt rött under 200 kr" → {"country": "Italien", "categoryLevel1": "Rött vin", "maxPrice": 200}
 "Vad passar till lax?" → {"dish": "lax", "categoryLevel1": "Vitt vin", "tasteClockBodyMin": 3, "tasteClockBodyMax": 8}
 "Fylliga Barolo" → {"searchText": "Barolo", "categoryLevel1": "Rött vin", "tasteClockBodyMin": 8}
-"runt 200 kr" → {"minPrice": 150, "maxPrice": 250}
-"omkring 300 kr" → {"minPrice": 250, "maxPrice": 350}
+"runt 200 kr" → {"minPrice": 150, "maxPrice": 250, "targetPrice": 200}
+"omkring 300 kr" → {"minPrice": 250, "maxPrice": 350, "targetPrice": 300}
 "max 300 kr" → {"maxPrice": 300}
 "till älg - max 300" → {"dish": "älg", "categoryLevel1": "Rött vin", "tasteClockBodyMin": 7, "maxPrice": 300}
+"200 kronor" → {"minPrice": 150, "maxPrice": 250, "targetPrice": 200}
+"300 kr italien" → {"country": "Italien", "minPrice": 250, "maxPrice": 350, "targetPrice": 300}
 
-VIKTIGT: 
-- När någon säger "runt X kr" eller "omkring X kr", sätt minPrice till X-50 och maxPrice till X+50.
-- När någon säger "max X kr" eller "under X kr", sätt bara maxPrice till X (ingen minPrice).
+KRITISKT VIKTIGT: 
+- När någon säger bara ett pris (t.ex. "200 kr", "300 kronor"), tolka det som "runt det priset"
+  Sätt minPrice till X-50, maxPrice till X+50, och targetPrice till X
+- När någon säger "runt X kr" eller "omkring X kr", sätt minPrice till X-50, maxPrice till X+50, targetPrice till X
+- ENDAST när någon säger "max X kr", "under X kr", "högst X kr" ska du sätta bara maxPrice (ingen minPrice eller targetPrice)
 
 SVARA ENDAST MED JSON!`;
 
@@ -377,7 +383,7 @@ SVARA ENDAST MED JSON!`;
     return {}; // Fallback till tom sökning
   }
 
-  private searchWines(params: any, preferHigherPrices: boolean = false): WineProduct[] {
+  private searchWines(params: any, preferHigherPrices: boolean = false, targetPrice?: number): WineProduct[] {
     let results = this.wines.filter(wine => 
       !wine.isDiscontinued && 
       !wine.isSupplierTemporaryNotAvailable &&
@@ -470,33 +476,41 @@ SVARA ENDAST MED JSON!`;
       }
     }
 
-    // Sortera efter relevans - prioritera tillgänglighet
+    // Sortera efter relevans och pris
     results.sort((a, b) => {
-      // 1. Prioritera Fast sortiment högst
+      // Om vi har ett målpris, sortera efter närhet till det priset (bäst värde nära målpris)
+      if (targetPrice) {
+        // Filtrera bort viner som är mer än 5% över målpriset
+        const maxAcceptable = targetPrice * 1.05;
+        
+        // Räkna ut avstånd från målpris (viner under målpris är OK, över straffas hårt)
+        const aDistance = a.price > maxAcceptable ? 9999 : 
+                         a.price > targetPrice ? (a.price - targetPrice) * 3 : // Straffa viner över målpris
+                         Math.abs(targetPrice - a.price) * 0.5; // Viner under målpris är OK
+        
+        const bDistance = b.price > maxAcceptable ? 9999 :
+                         b.price > targetPrice ? (b.price - targetPrice) * 3 :
+                         Math.abs(targetPrice - b.price) * 0.5;
+        
+        // Prioritera viner närmare målpriset
+        if (aDistance !== bDistance) {
+          return aDistance - bDistance;
+        }
+      }
+      
+      // Sekundär sortering: Prioritera Fast sortiment
       const aFast = a.assortmentText === 'Fast sortiment';
       const bFast = b.assortmentText === 'Fast sortiment';
       if (aFast && !bFast) return -1;
       if (!aFast && bFast) return 1;
       
-      // 2. Sedan Tillfälligt sortiment
+      // Tillfälligt sortiment
       const aTemp = a.assortmentText === 'Tillfälligt sortiment';
       const bTemp = b.assortmentText === 'Tillfälligt sortiment';
       if (aTemp && !bTemp) return -1;
       if (!aTemp && bTemp) return 1;
       
-      // 3. Lokalt & Småskaligt
-      const aLocal = a.assortmentText === 'Lokalt & Småskaligt';
-      const bLocal = b.assortmentText === 'Lokalt & Småskaligt';
-      if (aLocal && !bLocal) return -1;
-      if (!aLocal && bLocal) return 1;
-      
-      // 4. Ordervaror sist (svårast att få tag på)
-      const aOrder = a.assortmentText === 'Ordervaror';
-      const bOrder = b.assortmentText === 'Ordervaror';
-      if (aOrder && !bOrder) return 1;
-      if (!aOrder && bOrder) return -1;
-      
-      // 5. Inom samma sortiment, sortera efter pris
+      // Om inget målpris, använd gamla logiken
       return preferHigherPrices ? b.price - a.price : a.price - b.price;
     });
 
@@ -609,9 +623,11 @@ ABSOLUT VIKTIGT: Om det finns "DITT TIDIGARE BETYG" för ett vin, referera till 
       
       const usage = wine.usage ? `\n🌡️ ${wine.usage}` : '';
       
+      const assortmentWarning = wine.assortmentText === 'Tillfälligt sortiment' ? '\n⚠️ **TILLFÄLLIGT SORTIMENT**' : '';
+      
       embed.addFields({
         name: `${index + 1}. ${wineName}${vintage}`,
-        value: `📍 ${origin}\n🍇 ${grapes}\n💰 ${wine.price} kr | 🥃 ${wine.alcoholPercentage}%\n🆔 ${wine.productId}${usage}${tasteClock}`,
+        value: `📍 ${origin}\n🍇 ${grapes}\n💰 ${wine.price} kr | 🥃 ${wine.alcoholPercentage}%\n🆔 ${wine.productId}${usage}${tasteClock}${assortmentWarning}`,
         inline: false,
       });
     });
@@ -686,15 +702,52 @@ ABSOLUT VIKTIGT: Om det finns "DITT TIDIGARE BETYG" för ett vin, referera till 
       const searchTerms = this.generateSearchVariants(vineName);
       let allMatchingWines: WineProduct[] = [];
       
-      // Sök med alla varianter tills vi hittar resultat
+      // Förbättrad sökning som hanterar årtal och delar av namn
       for (const searchTerm of searchTerms) {
-        const searchLower = searchTerm.toLowerCase();
-        const matches = this.wines.filter(wine => 
-          wine.productNameBold?.toLowerCase().includes(searchLower) ||
-          wine.productNameThin?.toLowerCase().includes(searchLower)
-        );
+        // Ta bort eventuellt årtal för mer flexibel sökning
+        const searchWithoutYear = searchTerm.replace(/\b(19|20)\d{2}\b/g, '').trim();
+        
+        // Dela upp söktermen i ord för att matcha alla delar
+        const searchWords = searchWithoutYear.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+        
+        console.log(`[DEBUG] Searching for: "${searchTerm}" -> Without year: "${searchWithoutYear}" -> Words: ${searchWords.join(', ')}`);
+        
+        const matches = this.wines.filter(wine => {
+          const fullName = `${wine.productNameBold || ''} ${wine.productNameThin || ''}`.toLowerCase();
+          
+          // Kolla om alla sökord finns i vinnamnet
+          const allWordsMatch = searchWords.every(word => fullName.includes(word));
+          
+          // Eller om hela sökningen matchar
+          const exactMatch = fullName.includes(searchWithoutYear.toLowerCase());
+          
+          return allWordsMatch || exactMatch;
+        });
         
         if (matches.length > 0) {
+          console.log(`[DEBUG] Found ${matches.length} matches for "${searchWithoutYear}"`);
+          console.log(`[DEBUG] First 3 matches: ${matches.slice(0, 3).map(w => `${w.productNameBold} ${w.productNameThin}`).join(', ')}`);
+          
+          // Sortera så att bästa matchningar kommer först
+          matches.sort((a, b) => {
+            const aName = `${a.productNameBold || ''} ${a.productNameThin || ''}`.toLowerCase();
+            const bName = `${b.productNameBold || ''} ${b.productNameThin || ''}`.toLowerCase();
+            
+            // Prioritera exakta matchningar
+            const aExact = aName === searchWithoutYear.toLowerCase();
+            const bExact = bName === searchWithoutYear.toLowerCase();
+            if (aExact && !bExact) return -1;
+            if (!aExact && bExact) return 1;
+            
+            // Sedan de som börjar med sökningen
+            const aStarts = aName.startsWith(searchWithoutYear.toLowerCase());
+            const bStarts = bName.startsWith(searchWithoutYear.toLowerCase());
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+            
+            return 0;
+          });
+          
           allMatchingWines = matches;
           break; // Sluta söka när vi hittar träffar
         }
@@ -806,7 +859,7 @@ Skriv med personlighet men undvik att kalla dig själv 'expert' eller liknande. 
       value: `📍 **Ursprung:** ${origin}
 🍇 **Druvor:** ${grapes}
 💰 **Pris:** ${wine.price} kr | 🥃 **Alkohol:** ${wine.alcoholPercentage}%
-📦 **Sortiment:** ${wine.assortmentText}
+📦 **Sortiment:** ${wine.assortmentText}${wine.assortmentText === 'Tillfälligt sortiment' ? ' ⚠️ **TILLFÄLLIGT**' : ''}
 🆔 **Artikel-ID:** ${wine.productId}${tasteClock}`,
       inline: false
     });
@@ -1095,6 +1148,24 @@ Skriv med personlighet men undvik att kalla dig själv 'expert' eller liknande. 
 
   public async start(): Promise<void> {
     await this.client.login(process.env.DISCORD_TOKEN);
+    
+    // Graceful shutdown handlers
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`[${new Date().toISOString()}] Received ${signal}. Shutting down gracefully...`);
+      try {
+        console.log('Destroying Discord client...');
+        this.client.destroy();
+        console.log('Wine bot stopped successfully.');
+        process.exit(0);
+      } catch (error) {
+        console.error('Error during graceful shutdown:', error);
+        process.exit(1);
+      }
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // For nodemon
   }
 }
 
